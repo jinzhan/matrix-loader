@@ -1,9 +1,9 @@
 
-# martix-loader
+# Matrix-loader
 
 What problem does this feature solve?
 
-## Martix Products
+## Matrix Products
 
 - bd
 - kdd
@@ -11,7 +11,7 @@ What problem does this feature solve?
 - bd~11.7
 - bd
 
-## martix-loader
+## Matrix-loader
 
 
 ### Usage
@@ -24,25 +24,25 @@ __martix__('env', env => {
 
 ```
 
-## martix-style-loader
+## Matrix-style-loader
 
 
 ### Usage
-- -martix-env-
-- -martix-env {}
+- -matrix-env-
+- -matrix-env {}
 
 #### single line
 
 ```
 
--martix-env-width: 100px;
+-matrix-env-width: 100px;
 
 ```
 
 ### css block
 
 ```
--martix-env {
+-matrix-env {
     .classname {
         color: red;
     }
@@ -51,20 +51,20 @@ __martix__('env', env => {
 ```
 
 
-## martix-tpl-loader
+## matrix-tpl-loader
 
 ### Usage
 
 ```
 
-<div -martix-env="dev"></div>
+<div -matrix-env="dev"></div>
 ```
 
 
 
 ## Logical Operator
 
- - \_\_martix\_\_('!dev',()=>{...});
- - \_\_martix\_\_('dev || pre',()=>{...});
- - \_\_martix\_\_('!(dev || pre)',()=>{...});  
- - \_\_martix\_\_("!dev",()=>{...});
+ - \_\_matrix\_\_('!dev',()=>{...});
+ - \_\_matrix\_\_('dev || pre',()=>{...});
+ - \_\_matrix\_\_('!(dev || pre)',()=>{...});  
+ - \_\_matrix\_\_("!dev",()=>{...});
