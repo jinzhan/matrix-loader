@@ -16,7 +16,7 @@ const removeAttributes = require('posthtml-remove-attributes');
 /**
  * new Feature
  * [Todo] 1. js中支持文件名称缩写；
- * [Todo] 2. 内容自适应处理，type为可选项；
+ * [done] 2. 内容自适应处理，type为可选项；
  * [Todo] 3. 文件的分拆，更细的粒度；[Todo]
  * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
  * [Todo] 4. 工程化实践；
@@ -188,10 +188,33 @@ const matrixScriptParser = (source, env) => {
     return source;
 };
 
+
+const fileTemplate = () => {
+    return `
+    {%*百度App版本号*%}
+    {%$ua=$smarty.server.HTTP_USER_AGENT|lower%}
+    
+    {%if strpos($ua, 'lite baiduboxapp')%}
+        {%include file="./index.lite.tpl"%}
+    {%elseif strpos($ua, 'pro baiduboxapp')%}
+        {%include file="./index.pro.tpl"%}
+    {%elseif strpos($ua, 'info baiduboxapp')%}
+        {%include file="./index.info.tpl"%}
+    {%elseif strpos($ua, 'mission baiduboxapp')%}
+        {%include file="./index.mission.tpl"%}
+    {%else%}
+        {%include file="./index.main.tpl"%}
+    {%/if%}
+    `;
+};
+
 const loader = function (content, map, meta) {
     const options = Object.assign({}, getOptions(this));
+
     const callback = this.async();
-    const type = options.type;
+
+    // 获取文件类型
+    const type = options.type || this.resourcePath.split('.').pop();
 
     Promise.resolve().then(() => {
         switch (type) {
@@ -209,6 +232,7 @@ const loader = function (content, map, meta) {
              *
              * */
             case 'css':
+            case 'less':
                 return postcss([matrixStylePlugin])
                     .process(content, options)
                     .then((result) => {
