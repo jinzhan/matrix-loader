@@ -8,45 +8,14 @@ const postcss = require('postcss');
 const lessSyntax = require('postcss-less');
 const {getOptions} = require('loader-utils');
 const esprima = require('esprima');
+const removeAttributes = require('posthtml-remove-attributes');
 
-const matrixStylePlugin = postcss.plugin('matrixStylePlugin', options => {
-    return css => {
-        options = options || {};
-        css.walkRules(rule => {
-            // 处理样式块
-            const hasMatrixStyle = rule.selector && rule.selector.indexOf('-matrix-env-') !== -1;
 
-            if (hasMatrixStyle) {
-                rule.removeAll();
+// 定义全局属性
 
-                // todo: 如果符合规范要把内容抽出来，放到父级里面去
-                return;
-            }
-
-            // 处理单行样式
-            rule.walkDecls((decl, i) => {
-                /*
-                * decl.prop:   css属性
-                * decl.value:  css属性值
-                * */
-                const prop = decl.prop;
-                if (prop.indexOf('-matrix-env-') !== -1) {
-                    decl.prop = decl.prop.replace('-matrix-env-', 'cool-prefix----');
-                }
-            });
-        });
-    };
-});
-
-/**
- * 基于ast语法树，获取到为「函数块」的代码
- * @param {Object} node 代码节点
- * */
-const isMatrixSnippet = node => {
-    return node.type === 'CallExpression'
-        && node.callee.type === 'Identifier'
-        && node.callee.name === '__matrix__';
-};
+// html中的属性标识
+const matrixHtmlAttribute = 'matrix--env';
+const matrixHtmlAttributeAbbr = 'm--t';
 
 
 /**
@@ -65,6 +34,80 @@ const isMatchEnv = (expr, env) => {
         .replace(/([!=]=)/g, `'${env}'$1`);
     return (new Function('return ' + predicate))();
 };
+
+
+/**
+ * 基于ast语法树，获取到为「函数块」的代码
+ * @param {Object} node 代码节点
+ * */
+const isMatrixSnippet = node => {
+    return node.type === 'CallExpression'
+        && node.callee.type === 'Identifier'
+        && node.callee.name === '__matrix__';
+};
+
+/*
+* css插件，处理matrix中的css标记
+* **/
+const matrixStylePlugin = postcss.plugin('matrixStylePlugin', options => {
+    return css => {
+        options = options || {};
+        css.walkRules(rule => {
+            // 处理样式块
+            const hasMatrixStyle = rule.selector && rule.selector.indexOf('-matrix-env-') !== -1;
+
+            if (hasMatrixStyle) {
+                rule.removeAll();
+
+                // todo: 如果符合规范要把内容抽出来，放到父级里面去
+                return;
+            }
+
+            // 处理单行样式
+            rule.walkDecls((decl, i) => {
+                // decl.prop: 属性，decl.value:属性值
+                const prop = decl.prop;
+                if (prop.indexOf('-matrix-env-') !== -1) {
+                    decl.prop = decl.prop.replace('-matrix-env-', 'cool-prefix----');
+                }
+            });
+        });
+    };
+});
+
+
+const matrixHtmlPlugin = options => {
+    return tree => {
+        return new Promise((resolve, reject) => {
+            if (!Array.isArray(tree)) {
+                reject(new Error('tree is not Array'));
+            }
+
+            if (tree.length === 0) {
+                resolve(tree);
+            }
+
+            resolve(tree.walk(
+                node => {
+                    const attrs = node.attrs;
+                    const expr = attrs && (attrs[matrixHtmlAttribute] || attrs[matrixHtmlAttributeAbbr]);
+
+                    if (!expr) {
+                        return node;
+                    }
+
+                    if (!isMatchEnv(expr, options.env)) {
+                        node.tag = false;
+                        node.content = [];
+                    }
+
+                    return node;
+                })
+            );
+        });
+    };
+};
+
 
 /**
  * 解析js代码
@@ -124,7 +167,7 @@ const loader = function (content, map, meta) {
                         const {css, map, root, processor, messages} = result;
                         callback(null, css, map, meta);
                     });
-                break;
+
             case 'js':
                 const js = matrixScriptParser(content, options.env || '');
                 callback(null, js, map, meta);
@@ -138,16 +181,14 @@ const loader = function (content, map, meta) {
                  * 2. 缩写形式：<div m--t="dev"></div>
                  *
                  * */
-                content = `<div class="i-am-the-matrix">${content}</div>`;
-
                 return posthtml()
+                    .use(matrixHtmlPlugin(options))
+                    .use(removeAttributes([matrixHtmlAttribute, matrixHtmlAttributeAbbr]))
                     .process(content, options)
-                    .then((result) => {
-                        const {css, map, root, processor, messages} = result;
-                        callback(null, css, map, meta);
+                    .then(result => {
+                        const content = `<div class="i-am-the-result-of-posthtml">${result.html}</div>`;
+                        callback(null, content, map, meta);
                     });
-                callback(null, content, map, meta);
-                break;
 
             default:
                 callback(new SyntaxError('matrix-loader: type options is require'));
@@ -161,7 +202,6 @@ const loader = function (content, map, meta) {
                 ? callback(new SyntaxError(err))
                 : callback(err)
         });
-
 };
 
 /**
