@@ -209,8 +209,7 @@ const loader = function (content, map, meta) {
                     .use(removeAttributes([matrixHtmlAttribute, matrixHtmlAttributeAbbr]))
                     .process(content, options)
                     .then(result => {
-                        const content = `<div class="i-am-the-result-of-posthtml">${result.html}</div>`;
-                        callback(null, content, map, meta);
+                        callback(null, result.html, map, meta);
                     });
 
             default:
