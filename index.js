@@ -8,14 +8,19 @@ const postcss = require('postcss');
 const lessSyntax = require('postcss-less');
 const {getOptions} = require('loader-utils');
 const esprima = require('esprima');
+const babel = require('@babel/core');
 const removeAttributes = require('posthtml-remove-attributes');
 
 
 // 定义全局属性
 
 // html中的属性标识
-const matrixHtmlAttribute = 'matrix--env';
-const matrixHtmlAttributeAbbr = 'm--t';
+const matrixHtmlAttribute = 'matrix';
+const matrixHtmlAttributeAbbr = 'mt';
+const matrixCssSelector = '-matrix-';
+const matrixCssSelectorAbbr = '-mt-';
+const matrixCalleeName = 'matrix';
+const matrixCalleeNameAbbr = 'MT';
 
 
 /**
@@ -41,9 +46,10 @@ const isMatchEnv = (expr, env) => {
  * @param {Object} node 代码节点
  * */
 const isMatrixSnippet = node => {
+    const callee = node.callee;
     return node.type === 'CallExpression'
-        && node.callee.type === 'Identifier'
-        && node.callee.name === '__matrix__';
+        && callee.type === 'Identifier'
+        && (callee.name === matrixCalleeName || callee.name === matrixCalleeNameAbbr);
 };
 
 /*
@@ -126,6 +132,7 @@ const matrixScriptParser = (source, env) => {
 
     let hasMatrixSnippet = false;
 
+    // esprima版本
     esprima.parseModule(source, {}, (node, meta) => {
         // 仅处理函数块
         if (!isMatrixSnippet(node)) {
@@ -134,7 +141,7 @@ const matrixScriptParser = (source, env) => {
 
         hasMatrixSnippet = true;
 
-        // 得到函数的第一个参数，比如：!lite
+        // 函数的第一个参数，即条件，比如：!lite
         const arg = node.arguments[0].value.trim();
 
         if (!isMatchEnv(arg, env)) {
@@ -145,12 +152,26 @@ const matrixScriptParser = (source, env) => {
         }
     });
 
+
+    // babel版本
+    babel.transform(source, {}, (err, result) => {
+        // todo
+    });
+
+
+    // 清除掉不匹配的标记
     entries.sort((a, b) => b.end - a.end)
         .forEach(n => {
             source = source.slice(0, n.start) + source.slice(n.end);
         });
 
-    return hasMatrixSnippet ? 'function __matrix__(a,b){b();};' + source : source;
+    if (hasMatrixSnippet) {
+        // 将matrixCalleeName统一转化为缩写
+        // todo
+        return `function ${matrixCalleeName}(a,b){b();};` + source;
+    }
+
+    return source;
 };
 
 const loader = function (content, map, meta) {
@@ -183,9 +204,10 @@ const loader = function (content, map, meta) {
 
             /**
              *
-             * js的标签特征：
+             * js的标签特征：MT | matrix
              *
-             *   __matrix__('someCondition',()=>{
+             *  \/* global matrix, MT *\/
+             *   MT('someCondition',()=>{
              *       console.log('This is from __matrix__loader__');
              *   });
              *
@@ -199,8 +221,8 @@ const loader = function (content, map, meta) {
             /**
              * html的标签特征：
              *
-             * 1. <div matrix--env="dev"></div>
-             * 2. 缩写形式：<div m--t="dev"></div>
+             * 1. <div matrix="dev"></div>
+             * 2. 缩写形式：<div mt="dev"></div>
              *
              * */
             case 'html':
