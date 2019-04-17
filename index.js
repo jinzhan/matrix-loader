@@ -3,6 +3,7 @@
  * @author jinzhan<steinitz@qq.com>
  */
 const path = require('path');
+const posthtml = require('posthtml');
 const postcss = require('postcss');
 const lessSyntax = require('postcss-less');
 const {getOptions} = require('loader-utils');
@@ -49,6 +50,23 @@ const isMatrixSnippet = node => {
 
 
 /**
+ * 简单的断言比较
+ *  __martix__('!dev',()=>{...});
+ *  __martix__('dev || pre',()=>{...});
+ *  __martix__('!(dev || pre)',()=>{...});
+ *  __martix__("!dev",()=>{...});
+ *
+ * @param {string} expr 断言表达式
+ * @param {string} env 环境变量
+ * */
+const isMatchEnv = (expr, env) => {
+    // 得到代码中配置参数和环境变量的「比较表达式」
+    const predicate = expr.replace(/([_a-zA-Z][_a-zA-Z0-9\-]*)/g, '=="$1"')
+        .replace(/([!=]=)/g, `'${env}'$1`);
+    return (new Function('return ' + predicate))();
+};
+
+/**
  * 解析js代码
  *
  * @param {string} source script代码
@@ -76,11 +94,7 @@ const matrixScriptParser = (source, env) => {
         // 得到函数的第一个参数，比如：!lite
         const arg = node.arguments[0].value.trim();
 
-        // 得到代码中配置参数和环境变量的「比较表达式」
-        const predicate = arg.replace(/([_a-zA-Z][_a-zA-Z0-9\-]*)/g, '=="$1"')
-            .replace(/([!=]=)/g, `'${env}'$1`);
-
-        if (!eval(predicate)) {
+        if (!isMatchEnv(arg, env)) {
             entries.push({
                 start: meta.start.offset,
                 end: meta.end.offset
@@ -115,6 +129,26 @@ const loader = function (content, map, meta) {
                 const js = matrixScriptParser(content, options.env || '');
                 callback(null, js, map, meta);
                 break;
+
+            case 'html':
+                /**
+                 * html的标签特征：
+                 *
+                 * 1. <div matrix--env--="dev"></div>
+                 * 2. 缩写形式：<div m--t="dev"></div>
+                 *
+                 * */
+                content = `<div class="i-am-the-matrix">${content}</div>`;
+
+                return posthtml()
+                    .process(content, options)
+                    .then((result) => {
+                        const {css, map, root, processor, messages} = result;
+                        callback(null, css, map, meta);
+                    });
+                callback(null, content, map, meta);
+                break;
+
             default:
                 callback(new SyntaxError('matrix-loader: type options is require'));
         }
