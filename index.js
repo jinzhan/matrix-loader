@@ -191,7 +191,6 @@ const matrixScriptParser = (source, env) => {
 
 const fileTemplate = () => {
     return `
-    {%*百度App版本号*%}
     {%$ua=$smarty.server.HTTP_USER_AGENT|lower%}
     
     {%if strpos($ua, 'lite baiduboxapp')%}
