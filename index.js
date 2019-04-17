@@ -12,13 +12,27 @@ const babel = require('@babel/core');
 const removeAttributes = require('posthtml-remove-attributes');
 
 
-// 定义全局属性
+
+/**
+ * new Feature
+ * [Todo] 1. js中支持文件名称缩写；
+ * [Todo] 2. 内容自适应处理，type为可选项；
+ * [Todo] 3. 文件的分拆，更细的粒度；[Todo]
+ * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
+ * [Todo] 4. 工程化实践；
+ * [Todo] 5. 注意sourcemap的问题；
+ * [Todo] 6. 使用babel/core代替esprima
+ * **/
 
 // html中的属性标识
 const matrixHtmlAttribute = 'matrix';
 const matrixHtmlAttributeAbbr = 'mt';
+
+// css中的选择符或者前缀标识
 const matrixCssSelector = '-matrix-';
 const matrixCssSelectorAbbr = '-mt-';
+
+// js中的函数名称标识
 const matrixCalleeName = 'matrix';
 const matrixCalleeNameAbbr = 'MT';
 
