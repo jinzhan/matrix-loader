@@ -160,6 +160,19 @@ const loader = function (content, map, meta) {
 
     Promise.resolve().then(() => {
         switch (type) {
+            /**
+             *
+             * css的标签特征：
+             *
+             *   -matrix-env- #id {
+             *      color: red;
+             *   }
+             *
+             *  body {
+             *      -matrix-width: 100px;
+             *  }
+             *
+             * */
             case 'css':
                 return postcss([matrixStylePlugin])
                     .process(content, options)
@@ -168,19 +181,29 @@ const loader = function (content, map, meta) {
                         callback(null, css, map, meta);
                     });
 
+            /**
+             *
+             * js的标签特征：
+             *
+             *   __matrix__('someCondition',()=>{
+             *       console.log('This is from __matrix__loader__');
+             *   });
+             *
+             * */
             case 'js':
                 const js = matrixScriptParser(content, options.env || '');
                 callback(null, js, map, meta);
                 break;
 
+
+            /**
+             * html的标签特征：
+             *
+             * 1. <div matrix--env="dev"></div>
+             * 2. 缩写形式：<div m--t="dev"></div>
+             *
+             * */
             case 'html':
-                /**
-                 * html的标签特征：
-                 *
-                 * 1. <div matrix--env--="dev"></div>
-                 * 2. 缩写形式：<div m--t="dev"></div>
-                 *
-                 * */
                 return posthtml()
                     .use(matrixHtmlPlugin(options))
                     .use(removeAttributes([matrixHtmlAttribute, matrixHtmlAttributeAbbr]))
@@ -207,7 +230,6 @@ const loader = function (content, map, meta) {
 /**
  * matrix-style-loader
  *
- *
  * @method loader
  *
  * @param {String} css Source
@@ -217,3 +239,5 @@ const loader = function (content, map, meta) {
  */
 
 module.exports = loader;
+
+
