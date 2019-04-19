@@ -5,11 +5,11 @@ What problem does this feature solve?
 
 ## Matrix Products
 
-- bd
+- main
 - kdd
 - lite
-- bd~11.7
-- bd
+- pro
+- other
 
 ## Matrix-loader
 
@@ -42,7 +42,7 @@ __martix__('env', env => {
 ### css block
 
 ```
--matrix-env {
+-matrix-env- {
     .classname {
         color: red;
     }
@@ -57,14 +57,13 @@ __martix__('env', env => {
 
 ```
 
-<div -matrix-env="dev"></div>
+<div mt="env"></div>
 ```
 
 
 
 ## Logical Operator
 
- - \_\_matrix\_\_('!dev',()=>{...});
- - \_\_matrix\_\_('dev || pre',()=>{...});
- - \_\_matrix\_\_('!(dev || pre)',()=>{...});  
- - \_\_matrix\_\_("!dev",()=>{...});
+ - \_\_matrix\_\_('kdd',()=>{...});
+ - \_\_matrix\_\_('!kdd',()=>{...});
+ - \_\_matrix\_\_('main || kdd',()=>{...});
