@@ -12,7 +12,6 @@ const babel = require('@babel/core');
 const removeAttributes = require('posthtml-remove-attributes');
 
 
-
 /**
  * new Feature
  * [Todo] 1. js中支持文件名称缩写；
@@ -66,34 +65,43 @@ const isMatrixSnippet = node => {
         && (callee.name === matrixCalleeName || callee.name === matrixCalleeNameAbbr);
 };
 
-/*
-* css插件，处理matrix中的css标记
-* **/
-const matrixStylePlugin = postcss.plugin('matrixStylePlugin', options => {
+// css插件，处理matrix中的css标记
+const matrixStylePlugin = options => {
+    const cssSelectorReg = /-matrix-(\w+)-\s*/;
+    const cssPropReg = /-matrix-(\w+)-/;
     return css => {
         options = options || {};
         css.walkRules(rule => {
             // 处理样式块
-            const hasMatrixStyle = rule.selector && rule.selector.indexOf('-matrix-env-') !== -1;
+            const hasMatrixStyle = rule.selector && cssSelectorReg.test(rule.selector);
 
             if (hasMatrixStyle) {
-                rule.removeAll();
-
-                // todo: 如果符合规范要把内容抽出来，放到父级里面去
-                return;
+                const isMatch = RegExp.$1 === options.env;
+                if (!isMatch) {
+                    rule.removeAll();
+                    return;
+                }
+                rule.selector = rule.selector.replace(cssSelectorReg, '');
             }
 
             // 处理单行样式
             rule.walkDecls((decl, i) => {
-                // decl.prop: 属性，decl.value:属性值
+                // decl.prop: 属性 decl.value:属性值
                 const prop = decl.prop;
-                if (prop.indexOf('-matrix-env-') !== -1) {
-                    decl.prop = decl.prop.replace('-matrix-env-', 'cool-prefix----');
+
+                if (cssPropReg.test(prop)) {
+                    const isMatch = RegExp.$1 === options.env;
+
+                    if (isMatch) {
+                        decl.prop = decl.prop.replace(cssPropReg, '');
+                    } else {
+                        decl.remove();
+                    }
                 }
             });
         });
     };
-});
+};
 
 
 const matrixHtmlPlugin = options => {
@@ -226,13 +234,14 @@ const loader = function (content, map, meta) {
              *   }
              *
              *  body {
-             *      -matrix-width: 100px;
+             *      -matrix-env-width: 100px;
              *  }
              *
              * */
             case 'css':
             case 'less':
-                return postcss([matrixStylePlugin])
+                return postcss()
+                    .use(matrixStylePlugin(options))
                     .process(content, options)
                     .then((result) => {
                         const {css, map, root, processor, messages} = result;
