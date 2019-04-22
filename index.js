@@ -2,12 +2,9 @@
  * @file Matrix Loader
  * @author jinzhan<steinitz@qq.com>
  */
-const path = require('path');
 const posthtml = require('posthtml');
 const postcss = require('postcss');
-const lessSyntax = require('postcss-less');
 const {getOptions} = require('loader-utils');
-// const esprima = require('esprima');
 const babel = require('@babel/core');
 const traverse = require('babel-traverse').default;
 const removeAttributes = require('posthtml-remove-attributes');
@@ -15,7 +12,7 @@ const removeAttributes = require('posthtml-remove-attributes');
 
 /**
  * new Feature
- * [Todo] 1. js中支持文件名称缩写；
+ * [done] 1. js中支持文件名称缩写；
  * [done] 2. 内容自适应处理，type为可选项；
  * [Todo] 3. 文件的分拆，更细的粒度；[Todo]
  * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
@@ -150,28 +147,6 @@ const matrixScriptParser = (source, env) => {
     }
     const entries = [];
 
-    let hasMatrixSnippet = false;
-
-    // esprima版本
-    // esprima.parseModule(source, {}, (node, meta) => {
-    //     // 仅处理函数块
-    //     if (!isMatrixSnippet(node)) {
-    //         return;
-    //     }
-    //
-    //     hasMatrixSnippet = true;
-    //
-    //     // 函数的第一个参数，即条件，比如：!lite
-    //     const arg = node.arguments[0].value.trim();
-    //
-    //     if (!isMatchEnv(arg, env)) {
-    //         entries.push({
-    //             start: meta.start.offset,
-    //             end: meta.end.offset
-    //         });
-    //     }
-    // });
-
     const {code, map, ast} = babel.transformSync(source, {ast: true});
 
     traverse(ast, {
@@ -182,8 +157,6 @@ const matrixScriptParser = (source, env) => {
             if (!isMatrixSnippet(node)) {
                 return;
             }
-
-            hasMatrixSnippet = true;
 
             // 函数的第一个参数，即条件，比如：!lite
             const arg = node.arguments[0].value.trim();
@@ -213,25 +186,6 @@ const matrixScriptParser = (source, env) => {
         });
 
     return source;
-};
-
-
-const fileTemplate = () => {
-    return `
-        {%$ua=$smarty.server.HTTP_USER_AGENT|lower%}
-        
-        {%if strpos($ua, 'lite baiduboxapp')%}
-            {%include file="..."%}
-        {%elseif strpos($ua, 'pro baiduboxapp')%}
-            {%include file="..."%}
-        {%elseif strpos($ua, 'info baiduboxapp')%}
-            {%include file="..."%}
-        {%elseif strpos($ua, 'mission baiduboxapp')%}
-            {%include file="..."%}
-        {%else%}
-            {%include file="..."%}
-        {%/if%}
-    `;
 };
 
 const loader = function (content, map, meta) {
