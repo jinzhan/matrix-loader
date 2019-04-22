@@ -7,8 +7,9 @@ const posthtml = require('posthtml');
 const postcss = require('postcss');
 const lessSyntax = require('postcss-less');
 const {getOptions} = require('loader-utils');
-const esprima = require('esprima');
+// const esprima = require('esprima');
 const babel = require('@babel/core');
+const traverse = require('babel-traverse').default;
 const removeAttributes = require('posthtml-remove-attributes');
 
 
@@ -20,7 +21,7 @@ const removeAttributes = require('posthtml-remove-attributes');
  * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
  * [done] 4. 工程化实践；
  * [Todo] 5. 注意sourcemap的问题；
- * [Todo] 6. 使用babel/core代替esprima
+ * [done] 6. 使用babel/core代替esprima
  * **/
 
 // html中的属性标识
@@ -152,43 +153,64 @@ const matrixScriptParser = (source, env) => {
     let hasMatrixSnippet = false;
 
     // esprima版本
-    esprima.parseModule(source, {}, (node, meta) => {
-        // 仅处理函数块
-        if (!isMatrixSnippet(node)) {
-            return;
-        }
+    // esprima.parseModule(source, {}, (node, meta) => {
+    //     // 仅处理函数块
+    //     if (!isMatrixSnippet(node)) {
+    //         return;
+    //     }
+    //
+    //     hasMatrixSnippet = true;
+    //
+    //     // 函数的第一个参数，即条件，比如：!lite
+    //     const arg = node.arguments[0].value.trim();
+    //
+    //     if (!isMatchEnv(arg, env)) {
+    //         entries.push({
+    //             start: meta.start.offset,
+    //             end: meta.end.offset
+    //         });
+    //     }
+    // });
 
-        hasMatrixSnippet = true;
+    const {code, map, ast} = babel.transformSync(source, {ast: true});
 
-        // 函数的第一个参数，即条件，比如：!lite
-        const arg = node.arguments[0].value.trim();
+    traverse(ast, {
+        enter(path) {
+            const node = path.node;
 
-        if (!isMatchEnv(arg, env)) {
+            // 仅处理函数块
+            if (!isMatrixSnippet(node)) {
+                return;
+            }
+
+            hasMatrixSnippet = true;
+
+            // 函数的第一个参数，即条件，比如：!lite
+            const arg = node.arguments[0].value.trim();
+
+            const code = node.arguments[1];
+
+            if (code.type !== 'FunctionExpression') {
+                throw new Error('matrix loader: FunctionExpression required!');
+            }
+
+            const expr = source.slice(code.start, code.end);
+
+            // 清除掉不匹配的标记
+            const content = isMatchEnv(arg, env) ? `(${expr})();` : '';
+
             entries.push({
-                start: meta.start.offset,
-                end: meta.end.offset
+                start: node.start,
+                end: node.end,
+                content
             });
         }
     });
 
-
-    // babel版本
-    babel.transform(source, {}, (err, result) => {
-        // todo
-    });
-
-
-    // 清除掉不匹配的标记
     entries.sort((a, b) => b.end - a.end)
         .forEach(n => {
-            source = source.slice(0, n.start) + source.slice(n.end);
+            source = source.slice(0, n.start) + n.content + source.slice(n.end);
         });
-
-    if (hasMatrixSnippet) {
-        // 将matrixCalleeName统一转化为缩写
-        // todo
-        return `function ${matrixCalleeName}(a,b){b();};` + source;
-    }
 
     return source;
 };
@@ -301,5 +323,3 @@ const loader = function (content, map, meta) {
  */
 
 module.exports = loader;
-
-
