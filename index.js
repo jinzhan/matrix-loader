@@ -18,7 +18,7 @@ const removeAttributes = require('posthtml-remove-attributes');
  * [done] 2. 内容自适应处理，type为可选项；
  * [Todo] 3. 文件的分拆，更细的粒度；[Todo]
  * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
- * [Todo] 4. 工程化实践；
+ * [done] 4. 工程化实践；
  * [Todo] 5. 注意sourcemap的问题；
  * [Todo] 6. 使用babel/core代替esprima
  * **/
@@ -38,19 +38,15 @@ const matrixCalleeNameAbbr = 'MT';
 
 /**
  * 简单的断言比较
- *  __martix__('!dev',()=>{...});
- *  __martix__('dev || pre',()=>{...});
- *  __martix__('!(dev || pre)',()=>{...});
- *  __martix__("!dev",()=>{...});
  *
  * @param {string} expr 断言表达式
  * @param {string} env 环境变量
  * */
 const isMatchEnv = (expr, env) => {
     // 得到代码中配置参数和环境变量的「比较表达式」
-    const predicate = expr.replace(/([_a-zA-Z][_a-zA-Z0-9\-]*)/g, '=="$1"')
+    const assert = expr.replace(/([_a-zA-Z][_a-zA-Z0-9\-]*)/g, '=="$1"')
         .replace(/([!=]=)/g, `'${env}'$1`);
-    return (new Function('return ' + predicate))();
+    return (new Function('return ' + assert))();
 };
 
 
@@ -67,13 +63,15 @@ const isMatrixSnippet = node => {
 
 // css插件，处理matrix中的css标记
 const matrixStylePlugin = options => {
-    const cssSelectorReg = /-matrix-(\w+)-\s*/;
-    const cssPropReg = /-matrix-(\w+)-/;
+    const cssSelectorReg = new RegExp(`${matrixCssSelector}(\\w+)-\\s*`);
+    const cssPropReg = new RegExp(`${matrixCssSelector}(\\w+)-`);
+    const cssSelectorRegAbbr = new RegExp(`${matrixCssSelectorAbbr}(\\w+)-\\s*`);
+    const cssPropRegAbbr = new RegExp(`${matrixCssSelectorAbbr}(\\w+)-`);
     return css => {
         options = options || {};
         css.walkRules(rule => {
             // 处理样式块
-            const hasMatrixStyle = rule.selector && cssSelectorReg.test(rule.selector);
+            const hasMatrixStyle = rule.selector && (cssSelectorReg.test(rule.selector) || cssSelectorRegAbbr.test(rule.selector));
 
             if (hasMatrixStyle) {
                 const isMatch = RegExp.$1 === options.env;
@@ -81,7 +79,7 @@ const matrixStylePlugin = options => {
                     rule.removeAll();
                     return;
                 }
-                rule.selector = rule.selector.replace(cssSelectorReg, '');
+                rule.selector = rule.selector.replace(cssSelectorReg, '').replace(cssSelectorRegAbbr, '');
             }
 
             // 处理单行样式
@@ -89,11 +87,10 @@ const matrixStylePlugin = options => {
                 // decl.prop: 属性 decl.value:属性值
                 const prop = decl.prop;
 
-                if (cssPropReg.test(prop)) {
+                if (cssPropReg.test(prop) || cssPropRegAbbr.test(prop)) {
                     const isMatch = RegExp.$1 === options.env;
-
                     if (isMatch) {
-                        decl.prop = decl.prop.replace(cssPropReg, '');
+                        decl.prop = decl.prop.replace(cssPropReg, '').replace(cssPropRegAbbr, '');
                     } else {
                         decl.remove();
                     }
@@ -199,19 +196,19 @@ const matrixScriptParser = (source, env) => {
 
 const fileTemplate = () => {
     return `
-    {%$ua=$smarty.server.HTTP_USER_AGENT|lower%}
-    
-    {%if strpos($ua, 'lite baiduboxapp')%}
-        {%include file="./index.lite.tpl"%}
-    {%elseif strpos($ua, 'pro baiduboxapp')%}
-        {%include file="./index.pro.tpl"%}
-    {%elseif strpos($ua, 'info baiduboxapp')%}
-        {%include file="./index.info.tpl"%}
-    {%elseif strpos($ua, 'mission baiduboxapp')%}
-        {%include file="./index.mission.tpl"%}
-    {%else%}
-        {%include file="./index.main.tpl"%}
-    {%/if%}
+        {%$ua=$smarty.server.HTTP_USER_AGENT|lower%}
+        
+        {%if strpos($ua, 'lite baiduboxapp')%}
+            {%include file="..."%}
+        {%elseif strpos($ua, 'pro baiduboxapp')%}
+            {%include file="..."%}
+        {%elseif strpos($ua, 'info baiduboxapp')%}
+            {%include file="..."%}
+        {%elseif strpos($ua, 'mission baiduboxapp')%}
+            {%include file="..."%}
+        {%else%}
+            {%include file="..."%}
+        {%/if%}
     `;
 };
 
@@ -284,13 +281,11 @@ const loader = function (content, map, meta) {
                 callback(new SyntaxError('matrix-loader: type options is require'));
         }
     })
-        .catch((err) => {
+        .catch(err => {
             if (err.file) {
                 this.addDependency(err.file);
             }
-            return err.name === 'CssSyntaxError'
-                ? callback(new SyntaxError(err))
-                : callback(err)
+            return err.name === 'CssSyntaxError' ? callback(new SyntaxError(err)) : callback(err);
         });
 };
 
