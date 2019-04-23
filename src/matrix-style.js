@@ -3,10 +3,7 @@
  * */
 const postcss = require('postcss');
 const matrixStyle = require('./lib/matrix-style-plugin');
-
-// css中的选择符或者前缀标识
-const matrixCssSelector = '-matrix-';
-const matrixCssSelectorAbbr = '-mt-';
+const {matrixCssSelector, matrixCssSelectorAbbr} = require('./lib/config');
 
 const defaultOpts = {matrixCssSelector, matrixCssSelectorAbbr};
 

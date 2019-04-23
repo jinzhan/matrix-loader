@@ -18,18 +18,6 @@ const matrixStylePlugin = require('./lib/matrix-style-plugin');
 const matrixScriptParser = require('./lib/matrix-script-plugin');
 const matrixHtmlPlugin = require('./lib/matrix-html-plugin');
 
-
-/**
- * new Feature
- * [done] 1. js中支持文件名称缩写；
- * [done] 2. 内容自适应处理，type为可选项；
- * [Todo] 3. 文件的分拆，更细的粒度；[Todo]
- * [Todo] 4. postcss支持插件化（css的处理支持两种方式）；
- * [done] 4. 工程化实践；
- * [Todo] 5. 注意sourcemap的问题；
- * [done] 6. 使用babel/core代替esprima
- * **/
-
 const loader = function (content, map, meta) {
     const options = Object.assign({}, getOptions(this));
 
