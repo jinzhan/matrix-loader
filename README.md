@@ -51,6 +51,24 @@ __martix__('env', env => {
 ```
 
 
+### post-css plugin
+
+``` 
+
+    const matrix = require('matrix-loader/style');
+    
+    module.exports = {
+        plugins: [
+            matrix({
+                env: process.env.MATRIX || 'main'
+            })
+        ]
+    };
+
+```
+
+You'll need to set the env variable which could be something like `MATRIX=kdd npm run build`
+
 ## matrix-tpl-loader
 
 ### Usage
