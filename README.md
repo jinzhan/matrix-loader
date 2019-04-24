@@ -9,7 +9,7 @@ In some cases, the front-end code needs to differentiate the code in different e
 ## Usage
 
 ```
-npm install @baidu/matrix-loader --save-dev
+npm install matrix-loader --save-dev
 ```
 
 ## Configuration
@@ -28,7 +28,7 @@ MATRIX=main node ./scripts/build.js
             test: /\.(html|js|less)$/,
             use: [
                 {
-                    loader: '@baidu/matrix-loader',
+                    loader: 'matrix-loader',
                     options: {
                         env: MATRIX_ENV
                     },
@@ -44,7 +44,7 @@ MATRIX=main node ./scripts/build.js
 
 // postcss.config.js
 
-const matrix = require('@baidu/matrix-loader/style');
+const matrix = require('matrix-loader/style');
 
 module.exports = {
     plugins: [
@@ -147,7 +147,7 @@ martix('demo', () => {
     console.log(`The env is demo`);
 });
 
-martix('kdd', () => {
+martix('main', () => {
     console.log(`The env is main`);
 });
 
@@ -184,7 +184,7 @@ console.log(`The env is main`);
 
 ## Logical Operator
 
- - \_\_matrix\_\_('kdd',()=>{...});
- - \_\_matrix\_\_('!kdd',()=>{...});
- - \_\_matrix\_\_('main || kdd',()=>{...});
+ - \_\_matrix\_\_('demo',()=>{...});
+ - \_\_matrix\_\_('!demo',()=>{...});
+ - \_\_matrix\_\_('main || demo',()=>{...});
 
