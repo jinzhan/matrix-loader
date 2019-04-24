@@ -1,6 +1,6 @@
 {
   "name": "matrix-loader",
-  "version": "0.0.7777777",
+  "version": "0.0.8",
   "description": "matrix-loader",
   "main": "index.js",
   "scripts": {
