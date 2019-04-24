@@ -1,5 +1,5 @@
 /**
- * @file Matrix.js
+ * @file index.js 
  * @author jinzhan<steinitz@qq.com>
  */
 
