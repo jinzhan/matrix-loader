@@ -1,5 +1,5 @@
 /**
- * @file a post-css plugin
+ * @file post-css plugin
  * @author jinzhan<steinitz@qq.com>
  */
 

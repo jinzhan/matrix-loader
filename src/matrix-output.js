@@ -47,8 +47,8 @@ const getStatic = content => {
 };
 
 const getPathInfo = str => {
-    const pathArr = str.replace(/^\.\//, '').split('/');
-    const env = pathArr.shift().split('output-')[1];
+    const pathArr = str.replace(/^(?:\.\/)?output\//, '').split('/');
+    const env = pathArr.shift().split('matrix-')[1];
     const path = pathArr.join('/');
     return {
         path,
@@ -101,7 +101,7 @@ const getStatement = matrixList => {
 
 
 const make = () => {
-    const tplList = getTplList('output-*');
+    const tplList = getTplList('output/matrix-*');
     const staticAsset = {};
 
     // 获取静态资源
@@ -112,18 +112,18 @@ const make = () => {
         staticAsset[path][env] = getStatic(data);
     });
 
-    execSync('rm -rf output');
+    execSync('rm -rf output-matrix');
 
     // 将tpl填充到output中，同时也避免写入文件的时候，文件夹不存在
     statementMap.forEach(item => {
-        const path = `output-${item.env}`;
+        const path = `output/matrix-${item.env}`;
         const isDir =  fs.existsSync(path) && fs.statSync(path).isDirectory();
         if (isDir) {
-            execSync(`cp -r  output-${item.env}/ output`);
+            execSync(`cp -r  output/matrix-${item.env}/ output-matrix`);
         }
     });
 
-    const tplListMain = getTplList('output-main');
+    const tplListMain = getTplList('output/matrix-main');
 
     // 遍历主版中的文件
     tplListMain.forEach(filePath => {
@@ -157,7 +157,7 @@ const make = () => {
         }
 
         // 生成新的文件
-        const newPath = `./output/${path}`;
+        const newPath = `./output-matrix/${path}`;
         fs.writeFile(newPath, data, err => {
             if (err) {
                 console.warn(`create file ${newPath} failed`);

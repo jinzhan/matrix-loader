@@ -3,8 +3,8 @@
  * css插件，处理matrix中的js标记
  */
 
-const {isMatchEnv} = require('./utils');
-const {matrixHtmlAttribute, matrixHtmlAttributeAbbr} = require('./config');
+import {isMatchEnv} from './utils';
+import {matrixHtmlAttribute, matrixHtmlAttributeAbbr} from './config';
 
 const matrixHtmlPlugin = options => {
     return tree => {

@@ -3,12 +3,10 @@
  * css插件，处理matrix中的js标记
  */
 
-const babel = require('@babel/core');
-const traverse = require('babel-traverse').default;
-
-const {isMatchEnv} = require('./utils');
-
-const {matrixCalleeName, matrixCalleeNameAbbr} = require('./config');
+import * as babel from '@babel/core';
+import traverse from '@babel/traverse';
+import {isMatchEnv} from './utils';
+import {matrixCalleeName, matrixCalleeNameAbbr} from './config';
 
 /**
  * 基于ast语法树，获取到为「函数块」的代码
@@ -35,8 +33,52 @@ const matrixScriptParser = (source, env) => {
         return;
     }
     const entries = [];
+    const {code, map, ast} = babel.transformSync(source, {
+        ast: true,
+        // reference: https://github.com/babel/babel/blob/master/packages/babel-preset-stage-0/README.md
 
-    const {code, map, ast} = babel.transformSync(source, {ast: true});
+        // "plugins": [
+        //     // Stage 0
+        //     "@babel/plugin-proposal-function-bind",
+        //
+        //     // Stage 1
+        //     "@babel/plugin-proposal-export-default-from",
+        //     "@babel/plugin-proposal-logical-assignment-operators",
+        //     ["@babel/plugin-proposal-optional-chaining", {"loose": false}],
+        //     ["@babel/plugin-proposal-pipeline-operator", {"proposal": "minimal"}],
+        //     ["@babel/plugin-proposal-nullish-coalescing-operator", {"loose": false}],
+        //     "@babel/plugin-proposal-do-expressions",
+        //
+        //     // Stage 2
+        //     ["@babel/plugin-proposal-decorators", {"legacy": true}],
+        //     "@babel/plugin-proposal-function-sent",
+        //     "@babel/plugin-proposal-export-namespace-from",
+        //     "@babel/plugin-proposal-numeric-separator",
+        //     "@babel/plugin-proposal-throw-expressions",
+        //
+        //     // Stage 3
+        //     "@babel/plugin-syntax-dynamic-import",
+        //     "@babel/plugin-syntax-import-meta",
+        //     ["@babel/plugin-proposal-class-properties", {"loose": false}],
+        //     "@babel/plugin-proposal-json-strings"
+        // ]
+
+        plugins: [
+            [
+                '@babel/plugin-proposal-decorators', {
+                    legacy: true
+                }
+            ],
+            [
+                '@babel/plugin-proposal-class-properties', {
+                    loose: true
+                }
+            ],
+            '@babel/plugin-proposal-do-expressions',
+            '@babel/plugin-proposal-export-default-from',
+            '@babel/plugin-proposal-optional-catch-binding'
+        ]
+    });
 
     traverse(ast, {
         enter(path) {
@@ -52,7 +94,7 @@ const matrixScriptParser = (source, env) => {
 
             const code = node.arguments[1];
 
-            if (code.type !== 'FunctionExpression') {
+            if (!/^(Arrow)?FunctionExpression$/.test(code.type)) {
                 throw new Error('matrix loader: FunctionExpression required!');
             }
 

@@ -1,9 +1,9 @@
 /**
  * matrix style
  * */
-const postcss = require('postcss');
-const matrixStyle = require('./lib/matrix-style-plugin');
-const {matrixCssSelector, matrixCssSelectorAbbr} = require('./lib/config');
+import postcss from 'postcss';
+import matrixStyle from './lib/matrix-style-plugin';
+import {matrixCssSelector, matrixCssSelectorAbbr} from './lib/config';
 
 const defaultOpts = {matrixCssSelector, matrixCssSelectorAbbr};
 

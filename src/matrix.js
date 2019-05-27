@@ -2,25 +2,23 @@
  * @file Matrix Loader
  * @author jinzhan<steinitz@qq.com>
  */
-const posthtml = require('posthtml');
-const postcss = require('postcss');
-const {getOptions} = require('loader-utils');
-const removeAttributes = require('posthtml-remove-attributes');
-
-const {
+import posthtml from 'posthtml';
+import postcss from 'postcss';
+import {getOptions} from 'loader-utils';
+import removeAttributes from 'posthtml-remove-attributes';
+import {
     matrixCssSelector,
     matrixCssSelectorAbbr,
     matrixHtmlAttribute,
     matrixHtmlAttributeAbbr
-} = require('./lib/config');
+} from './lib/config';
 
-const matrixStylePlugin = require('./lib/matrix-style-plugin');
-const matrixScriptParser = require('./lib/matrix-script-plugin');
-const matrixHtmlPlugin = require('./lib/matrix-html-plugin');
+import matrixStylePlugin from './lib/matrix-style-plugin';
+import matrixScriptParser from './lib/matrix-script-plugin';
+import matrixHtmlPlugin from './lib/matrix-html-plugin';
 
 const loader = function (content, map, meta) {
     const options = Object.assign({}, getOptions(this));
-
     const callback = this.async();
 
     // 获取文件类型
@@ -33,12 +31,12 @@ const loader = function (content, map, meta) {
              * css的标签特征：
              *
              *   -matrix-env- #id {
-             *      color: red;
-             *   }
+                 *      color: red;
+                 *   }
              *
              *  body {
-             *      -matrix-env-width: 100px;
-             *  }
+                 *      -matrix-env-width: 100px;
+                 *  }
              *
              * */
             case 'css':
@@ -46,7 +44,7 @@ const loader = function (content, map, meta) {
                 return postcss()
                     .use(matrixStylePlugin(options, {matrixCssSelector, matrixCssSelectorAbbr}))
                     .process(content, options)
-                    .then((result) => {
+                    .then(result => {
                         const {css, map, root, processor, messages} = result;
                         callback(null, css, map, meta);
                     });
@@ -57,15 +55,15 @@ const loader = function (content, map, meta) {
              *
              *  \/* global matrix, MT *\/
              *   MT('someCondition',()=>{
-             *       console.log('This is from __matrix__loader__');
-             *   });
+                 *       console.log('This is from __matrix__loader__');
+                 *   });
              *
              * */
-            case 'js':
+            case 'js': {
                 const js = matrixScriptParser(content, options.env || '');
                 callback(null, js, map, meta);
                 break;
-
+            }
 
             /**
              * html的标签特征：

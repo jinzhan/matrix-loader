@@ -1,15 +1,23 @@
 {
-  "comments": false,
-  "presets": [
-    "stage-0",
-    "es2015"
-  ],
-  "plugins": [
-    "add-module-exports"
-  ],
-  "env": {
-    "production": {
-      "presets": ["minify"]
+    "presets": [
+        [
+            "@babel/preset-env",
+            {
+                "targets": {}
+            }
+        ]
+    ],
+    "comments": false,
+    "plugins": [
+        "babel-plugin-add-module-exports",
+        ['@babel/plugin-proposal-decorators', {legacy: true}],
+        ['@babel/plugin-proposal-class-properties', {loose: true}]
+    ],
+    "env": {
+        "production": {
+            "presets": [
+                "minify"
+            ]
+        }
     }
-  }
 }

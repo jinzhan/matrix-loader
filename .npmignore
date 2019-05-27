@@ -3,17 +3,20 @@
 .travis.yml
 .gitignore
 .npmignore
-.babelrc
 .editorconfig
 .travis.yml
 npm-debug.log
 yarn.lock
 yarn-error.log
 index.debug.js
+babel.config.js
+ci.yml
+.babelrc
+.eslintrc.js
 
 
 # DIRECTORIES
-
+.idea
 .github
 dmd
 test
@@ -21,3 +24,4 @@ coverage
 jsdoc-api
 node_modules
 src
+test
