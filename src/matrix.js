@@ -40,14 +40,18 @@ const loader = function (content, map, meta) {
              *
              * */
             case 'css':
-            case 'less':
+            case 'less': {
+                const postcssOptions = Object.assign({
+                    from: undefined
+                }, options);
                 return postcss()
                     .use(matrixStylePlugin(options, {matrixCssSelector, matrixCssSelectorAbbr}))
-                    .process(content, options)
+                    .process(content, postcssOptions)
                     .then(result => {
                         const {css, map, root, processor, messages} = result;
                         callback(null, css, map, meta);
                     });
+            }
 
             /**
              *
