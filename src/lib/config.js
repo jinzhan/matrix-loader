@@ -2,24 +2,14 @@
  * @file config.js
  */
 
+// html中的属性标识及缩写
+export const matrixHtmlAttribute = 'matrix';
+export const matrixHtmlAttributeAbbr = 'mt';
 
-// html中的属性标识
-const matrixHtmlAttribute = 'matrix';
-const matrixHtmlAttributeAbbr = 'mt';
+// css中的选择符或者前缀标识及缩写
+export const matrixCssSelector = '-matrix-';
+export const matrixCssSelectorAbbr = '-mt-';
 
-// css中的选择符或者前缀标识
-const matrixCssSelector = '-matrix-';
-const matrixCssSelectorAbbr = '-mt-';
-
-// js中的函数名称标识
-const matrixCalleeName = 'matrix';
-const matrixCalleeNameAbbr = 'MT';
-
-export default {
-    matrixHtmlAttribute,
-    matrixHtmlAttributeAbbr,
-    matrixCssSelector,
-    matrixCssSelectorAbbr,
-    matrixCalleeName,
-    matrixCalleeNameAbbr
-};
+// js中的函数名称标识及缩写
+export const matrixCalleeName = 'matrix';
+export const matrixCalleeNameAbbr = 'MT';

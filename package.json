@@ -1,44 +1,88 @@
 {
-  "name": "matrix-loader",
-  "version": "1.1.0",
-  "description": "matrix-loader",
-  "main": "index.js",
-  "scripts": {
-    "compile": "rm -rf dist && babel src -d dist",
-    "compile:min": "rm -rf dist && BABEL_ENV=production babel src -d dist",
-    "compile:watch": "npm run compile -- --watch",
-    "lint": "eslint ./dist",
-    "prepare": "npm run compile",
-    "test": "mocha test/test.traverse"
-  },
-  "bin": {
-    "matrix": "bin/matrix.js"
-  },
-  "author": "jinzhan",
-  "license": "ISC",
-  "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/preset-env": "^7.4.5",
-    "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-preset-minify": "^0.5.0",
-    "coveralls": "^2.11.9",
-    "eslint": "^2.7.0",
-    "expect": "^1.20.1",
-    "mocha": "^2.4.5"
-  },
-  "dependencies": {
-    "@babel/core": "^7.4.3",
-    "@babel/plugin-proposal-class-properties": "^7.4.4",
-    "@babel/plugin-proposal-decorators": "^7.4.4",
-    "@babel/plugin-proposal-do-expressions": "^7.2.0",
-    "@babel/plugin-proposal-export-default-from": "^7.2.0",
-    "@babel/plugin-proposal-export-namespace-from": "^7.2.0",
-    "@babel/plugin-proposal-optional-catch-binding": "^7.2.0",
-    "@babel/traverse": "^7.4.4",
-    "loader-utils": "^1.2.3",
-    "postcss": "^7.0.14",
-    "posthtml": "^0.11.3",
-    "posthtml-remove-attributes": "^1.0.0",
-    "posthtml-remove-tags": "^0.1.0"
-  }
+    "name": "matrix-loader",
+    "version": "1.1.1",
+    "description": "matrix-loader",
+    "main": "dist/cjs.js",
+    "engines": {
+        "node": ">= 8.9.0"
+    },
+    "scripts": {
+        "start": "npm run build -- -w",
+        "prebuild": "npm run clean",
+        "build": "cross-env NODE_ENV=production babel src -d dist --ignore \"src/**/*.test.js\" --copy-files",
+        "clean": "del-cli dist",
+        "commitlint": "commitlint --from=master",
+        "lint:prettier": "prettier \"{**/*,*}.{js,json,md,yml,css}\" --list-different",
+        "lint:js": "eslint --cache src test",
+        "lint": "npm-run-all -l -p \"lint:**\"",
+        "prepare": "npm run build",
+        "release": "standard-version",
+        "security": "npm audit",
+        "test:only": "cross-env NODE_ENV=test jest",
+        "test:watch": "cross-env NODE_ENV=test jest --watch",
+        "test:coverage": "cross-env NODE_ENV=test jest --collectCoverageFrom=\"src/**/*.js\" --coverage",
+        "test": "cross-env NODE_ENV=test npm run test:coverage",
+        "defaults": "webpack-defaults"
+    },
+    "files": [
+        "dist"
+    ],
+    "author": "jinzhan",
+    "license": "MIT",
+    "peerDependencies": {
+        "webpack": "^4.0.0"
+    },
+    "dependencies": {
+        "@babel/core": "^7.5.5",
+        "@babel/traverse": "^7.6.3",
+        "loader-utils": "^1.2.3",
+        "postcss": "^7.0.14",
+        "posthtml": "^0.11.3",
+        "posthtml-remove-attributes": "^1.0.0",
+        "posthtml-remove-tags": "^0.1.0",
+        "schema-utils": "^2.0.0"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.5.5",
+        "@babel/plugin-proposal-class-properties": "^7.4.4",
+        "@babel/plugin-proposal-decorators": "^7.4.4",
+        "@babel/plugin-proposal-do-expressions": "^7.2.0",
+        "@babel/plugin-proposal-export-default-from": "^7.2.0",
+        "@babel/plugin-proposal-export-namespace-from": "^7.2.0",
+        "@babel/plugin-proposal-optional-catch-binding": "^7.2.0",
+        "@babel/plugin-transform-runtime": "^7.6.2",
+        "@babel/preset-env": "^7.5.5",
+        "@babel/runtime": "^7.6.3",
+        "@commitlint/cli": "^8.1.0",
+        "@commitlint/config-conventional": "^8.1.0",
+        "@webpack-contrib/defaults": "^5.0.2",
+        "@webpack-contrib/eslint-config-webpack": "^3.0.0",
+        "babel-jest": "^24.9.0",
+        "babel-plugin-add-module-exports": "^1.0.2",
+        "babel-preset-minify": "^0.5.0",
+        "commitlint-azure-pipelines-cli": "^1.0.2",
+        "coveralls": "^2.11.9",
+        "cross-env": "^5.2.0",
+        "css-loader": "^3.2.0",
+        "del": "^5.0.0",
+        "del-cli": "^2.0.0",
+        "eslint": "^6.0.1",
+        "eslint-config-prettier": "^6.0.0",
+        "eslint-plugin-import": "^2.18.0",
+        "html-loader": "^0.5.5",
+        "husky": "^3.0.0",
+        "jest": "^24.8.0",
+        "jest-junit": "^6.4.0",
+        "lint-staged": "^9.2.0",
+        "memory-fs": "^0.4.1",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^1.18.2",
+        "standard-version": "^6.0.1",
+        "url-loader": "^2.0.1",
+        "webpack": "^4.36.1"
+    },
+    "keywords": [
+        "webpack",
+        "matrix"
+    ]
 }

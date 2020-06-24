@@ -1,0 +1,9 @@
+-matrix-main- .test {
+    color: red;
+}
+
+.demo {
+    -matrix-main-color: blue;
+    -matrix-main-width: 100px;
+    -matrix-kdd-width: 90px;
+}
